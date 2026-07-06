@@ -1,0 +1,209 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  background: #f6f5f2;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 8px 16px;
+  background: #1f1a33;
+  color: #fff;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+}
+
+.toolbar-brand {
+  font-weight: 700;
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-project {
+  margin-left: auto;
+}
+
+.btn {
+  background: #382f5c;
+  color: #fff;
+  border: 1px solid #504280;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: #4a3d78;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn-run {
+  background: #1f9d55;
+  border-color: #2bbf68;
+}
+
+.btn-run:hover:not(:disabled) {
+  background: #24b862;
+}
+
+.project-name-input,
+.project-load-select {
+  background: #2a2347;
+  color: #fff;
+  border: 1px solid #504280;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.app-body {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+.block-editor {
+  flex: 1.4 1 0;
+  min-width: 0;
+  background: #fff;
+}
+
+.app-side {
+  flex: 1 1 0;
+  min-width: 340px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #ddd;
+  min-height: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.panel-header {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #555;
+  padding: 6px 12px;
+  background: #ececea;
+  border-bottom: 1px solid #ddd;
+  flex: 0 0 auto;
+}
+
+.code-panel {
+  flex: 1 1 35%;
+}
+
+.code-panel-body {
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  flex: 1 1 auto;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  white-space: pre-wrap;
+}
+
+.console-panel {
+  flex: 1 1 40%;
+}
+
+.console-panel-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 10px 12px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  background: #111;
+  color: #eee;
+  display: flex;
+  flex-direction: column;
+}
+
+.console-placeholder {
+  color: #888;
+  font-style: italic;
+}
+
+.console-line {
+  white-space: pre-wrap;
+}
+
+.console-line-stdout {
+  color: #d4d4d4;
+}
+
+.console-line-stderr {
+  color: #f28b82;
+}
+
+.console-line-system {
+  color: #7aa2f7;
+  font-style: italic;
+}
+
+.console-error {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(242, 139, 130, 0.12);
+  border: 1px solid rgba(242, 139, 130, 0.4);
+}
+
+.console-error-message {
+  color: #f28b82;
+  font-weight: 600;
+}
+
+.console-error-hint {
+  margin-top: 4px;
+  color: #ddd;
+}
+
+.console-error-toggle {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.console-raw-traceback {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  color: #999;
+  font-size: 12px;
+}
+
+.stage-panel {
+  flex: 1 1 25%;
+  border-bottom: none;
+}

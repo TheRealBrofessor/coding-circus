@@ -1,0 +1,64 @@
+.live-demo {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.live-demo-shield {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background: transparent;
+}
+
+.live-demo-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: clamp(28px, 6vw, 72px);
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #7a5cff;
+  opacity: 0.1;
+  text-shadow: 0 0 20px rgba(122, 92, 255, 0.5);
+  animation: liveDemoWatermarkDrift 14s linear infinite;
+  will-change: transform;
+}
+
+@keyframes liveDemoWatermarkDrift {
+  0% { transform: translate(-60%, -55%) rotate(-3deg) scale(1); }
+  50% { transform: translate(-40%, -45%) rotate(-1deg) scale(1.05); }
+  100% { transform: translate(-60%, -55%) rotate(-3deg) scale(1); }
+}
+
+.live-demo-skip {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  pointer-events: auto;
+  padding: 8px 14px;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  color: #fff;
+  background: rgba(31, 26, 51, 0.85);
+  border: 1px solid #504280;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.live-demo-skip:hover {
+  background: rgba(74, 61, 120, 0.9);
+}
+
+.live-demo-skip:focus-visible {
+  outline: 2px solid #7a5cff;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-demo-watermark {
+    animation: none;
+  }
+}

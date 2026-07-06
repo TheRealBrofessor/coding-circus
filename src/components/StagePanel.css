@@ -1,0 +1,182 @@
+.stage-panel-body {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  isolation: isolate;
+  background: radial-gradient(ellipse at center, #241a3d 0%, #0d0a18 100%);
+  color: #fff;
+  padding: 16px;
+  text-align: center;
+}
+
+.stage-live {
+  color: #ff5f56;
+  margin-left: 8px;
+  animation: stageLivePulse 1.4s ease-in-out infinite;
+}
+
+/* ---------- Ambient spotlight backdrop ---------- */
+
+.stage-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.stage-glow {
+  position: absolute;
+  width: 55%;
+  height: 55%;
+  border-radius: 50%;
+  filter: blur(48px);
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+.stage-glow-a {
+  top: -10%;
+  left: -5%;
+  background: radial-gradient(circle, rgba(255, 196, 82, 0.55) 0%, rgba(255, 196, 82, 0) 70%);
+  animation: stageDriftA 16s ease-in-out infinite;
+}
+
+.stage-glow-b {
+  bottom: -15%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(255, 79, 160, 0.5) 0%, rgba(255, 79, 160, 0) 70%);
+  animation: stageDriftB 20s ease-in-out infinite;
+}
+
+.stage-glow-c {
+  bottom: 10%;
+  left: 20%;
+  background: radial-gradient(circle, rgba(94, 129, 255, 0.45) 0%, rgba(94, 129, 255, 0) 70%);
+  animation: stageDriftC 24s ease-in-out infinite;
+}
+
+@keyframes stageDriftA {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+  50% { transform: translate(12%, 10%) scale(1.15); opacity: 0.9; }
+}
+
+@keyframes stageDriftB {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  50% { transform: translate(-10%, -8%) scale(1.1); opacity: 0.85; }
+}
+
+@keyframes stageDriftC {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  50% { transform: translate(6%, -12%) scale(1.2); opacity: 0.75; }
+}
+
+/* ---------- Marquee chase lights ---------- */
+
+.stage-marquee {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.stage-bulb {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #fff6d8 0%, #ffcf5c 60%, rgba(255, 207, 92, 0) 100%);
+  animation: stageBulbPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes stageBulbPulse {
+  0%, 100% { opacity: 0.25; box-shadow: 0 0 2px 0 rgba(255, 207, 92, 0.5); }
+  50% { opacity: 1; box-shadow: 0 0 10px 3px rgba(255, 207, 92, 0.85); }
+}
+
+/* ---------- Curtains ---------- */
+
+.stage-curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 7%;
+  min-width: 22px;
+  z-index: 2;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0 6px, rgba(255, 255, 255, 0.05) 6px 12px),
+    linear-gradient(180deg, #5c0f18 0%, #7c1622 45%, #4a0d14 100%);
+  box-shadow: 0 0 24px 6px rgba(0, 0, 0, 0.5) inset;
+}
+
+.stage-curtain-left {
+  left: 0;
+  border-radius: 0 40% 40% 0 / 0 50% 50% 0;
+}
+
+.stage-curtain-right {
+  right: 0;
+  border-radius: 40% 0 0 40% / 50% 0 0 50%;
+}
+
+/* ---------- Text crossfade ---------- */
+
+.stage-content {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10%;
+}
+
+.stage-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  max-width: 100%;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 14px rgba(255, 214, 130, 0.55), 0 2px 6px rgba(0, 0, 0, 0.65);
+}
+
+.stage-text-enter {
+  animation: stageTextEnter 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.stage-text-exit {
+  animation: stageTextExit 220ms ease-in both;
+}
+
+@keyframes stageTextEnter {
+  from { opacity: 0; transform: translate(-50%, -40%) scale(0.94); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes stageTextExit {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -60%) scale(1.05); }
+}
+
+@keyframes stageLivePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-glow,
+  .stage-bulb,
+  .stage-live {
+    animation: none !important;
+  }
+  .stage-text-enter,
+  .stage-text-exit {
+    animation-duration: 1ms !important;
+  }
+}
