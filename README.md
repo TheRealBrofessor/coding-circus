@@ -1,32 +1,66 @@
-# React + TypeScript + Vite
+# 🎪 Coding Circus
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A Scratch-style, block-based Python learning tool. Drag blocks, watch readable
+Python appear in real time, run it entirely in the browser, and see the
+result — no backend server required.
 
-Currently, two official plugins are available:
+**Core loop:** drag blocks → generated Python updates live → click Run →
+Python executes via [Pyodide](https://pyodide.org/) in a Web Worker → output
+shows in the Console and the themed Stage panel → errors are caught and
+explained in plain language → save, load, or export the project.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Highlights
 
-## React Compiler
+- **Custom Python-focused Blockly blocks** — print, variables, math, logic,
+  control flow, and a `wait` block for timing/animation — each with a
+  deterministic, readable Python generator (see [`src/blockly/`](src/blockly)).
+- **Pluggable runner abstraction** — `BrowserPyodideRunner` is the first
+  implementation of `RunnerInterface`; `LocalPythonRunner` and
+  `DockerSandboxRunner` are documented future targets (see
+  [`ARCHITECTURE.md`](ARCHITECTURE.md)).
+- **Beginner-friendly error messages** — tracebacks are normalized into plain
+  language with an "advanced" toggle for the raw traceback.
+- **Project persistence** — save/load via `localStorage`, export to `.py` or
+  a portable `.json` project file, import it back.
+- **Live demo splash screen** — on first load, the app demonstrates itself:
+  real blocks drag in from the real palette, assemble a working program,
+  run it, and save it, before handing control to you.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting started
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Then open the printed local URL. `npm run build` produces a static
+production build (`dist/`) — the whole app is client-side, so it can be
+hosted anywhere that serves static files.
+
+## Scripts
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Type-check (`tsc -b`) and build for production |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run Oxlint |
+
+## Project structure
+
+```
+src/
+  blockly/      Custom block definitions, Python generators, toolbox
+  runner/       RunnerInterface, BrowserPyodideRunner, Pyodide worker
+  project/      Save/load/export (localStorage + file-based)
+  demo/         The live block-building demo script + player
+  components/   React UI: editor, code/console/stage panels, toolbar
+```
+
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the deeper technical rationale
+behind the runner abstraction and future backend-execution targets.
+
+## Tech stack
+
+Vite, React 19, TypeScript, [Blockly](https://developers.google.com/blockly),
+[Pyodide](https://pyodide.org/).
