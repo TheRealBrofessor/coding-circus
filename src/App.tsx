@@ -16,9 +16,23 @@ import './App.css';
 const RUN_TIMEOUT_MS = 20_000;
 const INTRO_SESSION_KEY = 'coding-circus:intro-seen';
 
-function loadWorkspaceState(workspace: Blockly.Workspace, state: unknown): void {
+/**
+ * Loads serialized workspace state, treating the input as untrusted: a corrupt
+ * or hand-edited project must degrade to an error message, never a crash. On
+ * failure the workspace is left cleared (not half-loaded).
+ */
+function loadWorkspaceState(workspace: Blockly.Workspace, state: unknown): { ok: true } | { ok: false; message: string } {
   workspace.clear();
-  Blockly.serialization.workspaces.load(state as never, workspace);
+  try {
+    Blockly.serialization.workspaces.load(state as never, workspace);
+    return { ok: true };
+  } catch (err) {
+    workspace.clear();
+    return {
+      ok: false,
+      message: `Could not load this project — its block data appears to be corrupted. (${err instanceof Error ? err.message : String(err)})`,
+    };
+  }
 }
 
 export default function App() {
@@ -100,13 +114,24 @@ export default function App() {
     setSavedProjects(listProjects());
   }, [projectName]);
 
-  const handleLoad = useCallback((name: string) => {
-    const workspace = workspaceRef.current;
-    const project = loadProject(name);
-    if (!workspace || !project) return;
-    loadWorkspaceState(workspace, project.workspaceJson);
-    setProjectName(project.name);
-  }, []);
+  const handleLoad = useCallback(
+    (name: string) => {
+      const workspace = workspaceRef.current;
+      if (!workspace) return;
+      const project = loadProject(name);
+      if (!project) {
+        appendConsole('system', `Could not load "${name}" — the saved data is missing or corrupted.`);
+        return;
+      }
+      const result = loadWorkspaceState(workspace, project.workspaceJson);
+      if (!result.ok) {
+        appendConsole('system', result.message);
+        return;
+      }
+      setProjectName(project.name);
+    },
+    [appendConsole],
+  );
 
   const handleExportPython = useCallback(() => {
     exportPython(projectName, code);
@@ -150,8 +175,15 @@ export default function App() {
       if (!workspace) return;
       try {
         const project = await readProjectJsonFile(file);
-        loadWorkspaceState(workspace, project.workspaceJson);
-        setProjectName(project.name);
+        const result = loadWorkspaceState(workspace, project.workspaceJson);
+        if (!result.ok) {
+          appendConsole('system', result.message);
+          return;
+        }
+        // If a saved project already uses this name, rename the import so a
+        // later Save doesn't silently overwrite the existing one.
+        const name = listProjects().includes(project.name) ? `${project.name} (imported)` : project.name;
+        setProjectName(name);
       } catch (err) {
         appendConsole('system', err instanceof Error ? err.message : 'Could not import that file.');
       }

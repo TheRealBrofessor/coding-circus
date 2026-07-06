@@ -1,4 +1,5 @@
 import { pythonGenerator, Order } from 'blockly/python';
+import { pickOperator } from './helpers';
 
 const ARITHMETIC_OPERATORS: Record<string, [string, Order]> = {
   ADD: ['+', Order.ADDITIVE],
@@ -20,14 +21,14 @@ const COMPARE_OPERATORS: Record<string, string> = {
 };
 
 pythonGenerator.forBlock['python_math_op'] = function (block, generator) {
-  const [symbol, order] = ARITHMETIC_OPERATORS[block.getFieldValue('OP')];
+  const [symbol, order] = pickOperator(ARITHMETIC_OPERATORS, block.getFieldValue('OP'), 'ADD');
   const a = generator.valueToCode(block, 'A', order) || '0';
   const b = generator.valueToCode(block, 'B', order) || '0';
   return [`${a} ${symbol} ${b}`, order];
 };
 
 pythonGenerator.forBlock['python_compare'] = function (block, generator) {
-  const symbol = COMPARE_OPERATORS[block.getFieldValue('OP')];
+  const symbol = pickOperator(COMPARE_OPERATORS, block.getFieldValue('OP'), 'EQ');
   const a = generator.valueToCode(block, 'A', Order.RELATIONAL) || 'None';
   const b = generator.valueToCode(block, 'B', Order.RELATIONAL) || 'None';
   return [`${a} ${symbol} ${b}`, Order.RELATIONAL];
