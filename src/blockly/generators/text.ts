@@ -1,4 +1,5 @@
 import { pythonGenerator, Order } from 'blockly/python';
+import { sanitizeInlineText } from './helpers';
 
 pythonGenerator.forBlock['python_print'] = function (block, generator) {
   const value = generator.valueToCode(block, 'VALUE', Order.NONE) || "''";
@@ -12,5 +13,7 @@ pythonGenerator.forBlock['python_join'] = function (block, generator) {
 };
 
 pythonGenerator.forBlock['python_comment'] = function (block) {
-  return `# ${block.getFieldValue('TEXT')}\n`;
+  // Sanitized so a line break typed (or imported) into the field cannot
+  // escape the comment and become executable Python.
+  return `# ${sanitizeInlineText(block.getFieldValue('TEXT'))}\n`;
 };

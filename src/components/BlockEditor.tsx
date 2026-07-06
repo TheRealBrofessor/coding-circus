@@ -16,7 +16,8 @@ export function BlockEditor({ onCodeChange, onWorkspaceReady }: BlockEditorProps
 
     const workspace = Blockly.inject(containerRef.current, {
       toolbox,
-      media: '/blockly-media/',
+      // BASE_URL-relative so the app works at a subpath (e.g. GitHub Pages).
+      media: `${import.meta.env.BASE_URL}blockly-media/`,
       trashcan: true,
       zoom: { controls: true, wheel: true, startScale: 1 },
       grid: { spacing: 20, length: 3, colour: '#e5e5e5', snap: true },

@@ -19,6 +19,12 @@ const HINTS: Record<string, string> = {
   AttributeError: "You tried to use a feature that this value doesn't have.",
   RecursionError: 'Your program called itself too many times without stopping. Check your loop or repeat conditions.',
   KeyboardInterrupt: 'The program was stopped before it finished.',
+  AssertionError: 'A "check that" block found its condition was not true, so the program stopped.',
+  // input() has no interactive stdin in the in-browser runner (see ARCHITECTURE.md).
+  EOFError:
+    'This program asks for input, which the browser runner cannot collect yet. Export the .py file and run it with Python on your computer to try it.',
+  OSError:
+    'This program tried to use a feature (like asking for input) that the browser runner does not support. Export the .py file and run it with desktop Python.',
 };
 
 function extractExceptionType(traceback: string): string {

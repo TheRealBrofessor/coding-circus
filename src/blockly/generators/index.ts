@@ -7,5 +7,11 @@ import './text';
 import './math';
 import './logic';
 import './control';
+import './input';
+import './lists';
+import './random';
+import './functions';
+import './debug';
+import './stage';
 
 export { pythonGenerator } from 'blockly/python';

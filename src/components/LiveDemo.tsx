@@ -67,6 +67,8 @@ export function LiveDemo({ workspaceRef, onReveal, onRunDemo, onSaveDemo }: Live
       if (!workspace) return;
       started.current = true;
       cancelled.current = false;
+      // Replays start from a clean slate rather than stacking onto existing blocks.
+      workspace.clear();
 
       (async () => {
         await playLiveDemo(workspace, LIVE_DEMO_SCRIPT, () => cancelled.current);

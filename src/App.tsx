@@ -3,6 +3,7 @@ import * as Blockly from 'blockly/core';
 import { BlockEditor } from './components/BlockEditor';
 import { CodePanel } from './components/CodePanel';
 import { ConsolePanel, type ConsoleLine } from './components/ConsolePanel';
+import { Landing } from './components/Landing';
 import { LiveDemo } from './components/LiveDemo';
 import { StagePanel } from './components/StagePanel';
 import { Toolbar } from './components/Toolbar';
@@ -11,14 +12,32 @@ import type { NormalizedError } from './runner/RunResult';
 import { listProjects, loadProject, saveProject } from './project/ProjectStorage';
 import { exportProjectJson, exportPython, readProjectJsonFile } from './project/ProjectExport';
 import type { ProjectFile } from './project/types';
+import { EXAMPLES } from './examples';
 import './App.css';
 
 const RUN_TIMEOUT_MS = 20_000;
 const INTRO_SESSION_KEY = 'coding-circus:intro-seen';
 
-function loadWorkspaceState(workspace: Blockly.Workspace, state: unknown): void {
+/** Which full-screen overlay is showing: the landing hero, the self-building demo, or none. */
+type Overlay = 'landing' | 'demo' | null;
+
+/**
+ * Loads serialized workspace state, treating the input as untrusted: a corrupt
+ * or hand-edited project must degrade to an error message, never a crash. On
+ * failure the workspace is left cleared (not half-loaded).
+ */
+function loadWorkspaceState(workspace: Blockly.Workspace, state: unknown): { ok: true } | { ok: false; message: string } {
   workspace.clear();
-  Blockly.serialization.workspaces.load(state as never, workspace);
+  try {
+    Blockly.serialization.workspaces.load(state as never, workspace);
+    return { ok: true };
+  } catch (err) {
+    workspace.clear();
+    return {
+      ok: false,
+      message: `Could not load this project — its block data appears to be corrupted. (${err instanceof Error ? err.message : String(err)})`,
+    };
+  }
 }
 
 export default function App() {
@@ -30,11 +49,11 @@ export default function App() {
   const [showRawTraceback, setShowRawTraceback] = useState(false);
   const [projectName, setProjectName] = useState('my-first-program');
   const [savedProjects, setSavedProjects] = useState<string[]>([]);
-  const [showIntro, setShowIntro] = useState(() => {
+  const [overlay, setOverlay] = useState<Overlay>(() => {
     try {
-      return sessionStorage.getItem(INTRO_SESSION_KEY) !== '1';
+      return sessionStorage.getItem(INTRO_SESSION_KEY) === '1' ? null : 'landing';
     } catch {
-      return true;
+      return 'landing';
     }
   });
 
@@ -65,6 +84,12 @@ export default function App() {
       timeoutMs: RUN_TIMEOUT_MS,
       onStdout: (chunk) => {
         appendConsole('stdout', chunk);
+        // Stage convention: the stage mirrors the latest printed line, and an
+        // empty printed line (the "clear the stage" block) blanks it.
+        if (chunk.trim() === '') {
+          setStageText('');
+          return;
+        }
         const lastLine = chunk.split('\n').filter((l) => l.length > 0).pop();
         if (lastLine) setStageText(lastLine);
       },
@@ -95,18 +120,35 @@ export default function App() {
 
   const handleSave = useCallback(() => {
     const workspace = workspaceRef.current;
-    if (!workspace || !projectName.trim()) return;
-    saveProject(projectName.trim(), Blockly.serialization.workspaces.save(workspace));
-    setSavedProjects(listProjects());
-  }, [projectName]);
+    if (!workspace) return;
+    try {
+      const saved = saveProject(projectName, Blockly.serialization.workspaces.save(workspace));
+      setSavedProjects(listProjects());
+      setProjectName(saved.name);
+      appendConsole('system', `Saved "${saved.name}".`);
+    } catch (err) {
+      appendConsole('system', err instanceof Error ? err.message : 'Could not save the project.');
+    }
+  }, [projectName, appendConsole]);
 
-  const handleLoad = useCallback((name: string) => {
-    const workspace = workspaceRef.current;
-    const project = loadProject(name);
-    if (!workspace || !project) return;
-    loadWorkspaceState(workspace, project.workspaceJson);
-    setProjectName(project.name);
-  }, []);
+  const handleLoad = useCallback(
+    (name: string) => {
+      const workspace = workspaceRef.current;
+      if (!workspace) return;
+      const project = loadProject(name);
+      if (!project) {
+        appendConsole('system', `Could not load "${name}" — the saved data is missing or corrupted.`);
+        return;
+      }
+      const result = loadWorkspaceState(workspace, project.workspaceJson);
+      if (!result.ok) {
+        appendConsole('system', result.message);
+        return;
+      }
+      setProjectName(project.name);
+    },
+    [appendConsole],
+  );
 
   const handleExportPython = useCallback(() => {
     exportPython(projectName, code);
@@ -128,21 +170,53 @@ export default function App() {
     const workspace = workspaceRef.current;
     if (!workspace) return;
     const demoName = 'coding-circus-demo';
-    saveProject(demoName, Blockly.serialization.workspaces.save(workspace));
-    setSavedProjects(listProjects());
-    setProjectName(demoName);
-  }, []);
-
-  const dismissIntro = useCallback(() => {
-    setShowIntro(false);
     try {
-      sessionStorage.setItem(INTRO_SESSION_KEY, '1');
+      saveProject(demoName, Blockly.serialization.workspaces.save(workspace));
+      setSavedProjects(listProjects());
+      setProjectName(demoName);
     } catch {
-      // Session storage may be unavailable (private browsing); the intro will just replay next load.
+      // Demo auto-save is best-effort; storage may be unavailable.
     }
   }, []);
 
-  const replayIntro = useCallback(() => setShowIntro(true), []);
+  const markIntroSeen = useCallback(() => {
+    try {
+      sessionStorage.setItem(INTRO_SESSION_KEY, '1');
+    } catch {
+      // Session storage may be unavailable (private browsing); the landing will just show again next load.
+    }
+  }, []);
+
+  const handleStartCoding = useCallback(() => {
+    markIntroSeen();
+    setOverlay(null);
+  }, [markIntroSeen]);
+
+  const handleWatchDemo = useCallback(() => {
+    markIntroSeen();
+    setOverlay('demo');
+  }, [markIntroSeen]);
+
+  const dismissDemo = useCallback(() => {
+    markIntroSeen();
+    setOverlay(null);
+  }, [markIntroSeen]);
+
+  const handleLoadExample = useCallback(
+    (id: string) => {
+      const workspace = workspaceRef.current;
+      const example = EXAMPLES.find((e) => e.id === id);
+      if (!workspace || !example) return;
+      const result = loadWorkspaceState(workspace, example.state);
+      if (!result.ok) {
+        appendConsole('system', result.message);
+        return;
+      }
+      setProjectName(example.projectName);
+      appendConsole('system', `Loaded example "${example.label}". Click ▶ Run to try it!`);
+    },
+    [appendConsole],
+  );
 
   const handleImportProjectFile = useCallback(
     async (file: File) => {
@@ -150,8 +224,15 @@ export default function App() {
       if (!workspace) return;
       try {
         const project = await readProjectJsonFile(file);
-        loadWorkspaceState(workspace, project.workspaceJson);
-        setProjectName(project.name);
+        const result = loadWorkspaceState(workspace, project.workspaceJson);
+        if (!result.ok) {
+          appendConsole('system', result.message);
+          return;
+        }
+        // If a saved project already uses this name, rename the import so a
+        // later Save doesn't silently overwrite the existing one.
+        const name = listProjects().includes(project.name) ? `${project.name} (imported)` : project.name;
+        setProjectName(name);
       } catch (err) {
         appendConsole('system', err instanceof Error ? err.message : 'Could not import that file.');
       }
@@ -174,7 +255,8 @@ export default function App() {
         onExportPython={handleExportPython}
         onExportProject={handleExportProject}
         onImportProjectFile={handleImportProjectFile}
-        onReplayIntro={replayIntro}
+        onReplayIntro={handleWatchDemo}
+        onLoadExample={handleLoadExample}
       />
       <div className="app-body">
         <BlockEditor
@@ -194,14 +276,15 @@ export default function App() {
           <StagePanel text={stageText} isRunning={isRunning} />
         </div>
       </div>
-      {showIntro && (
+      {overlay === 'demo' && (
         <LiveDemo
           workspaceRef={workspaceRef}
-          onReveal={dismissIntro}
+          onReveal={dismissDemo}
           onRunDemo={handleRun}
           onSaveDemo={handleSaveDemo}
         />
       )}
+      {overlay === 'landing' && <Landing onStartCoding={handleStartCoding} onWatchDemo={handleWatchDemo} />}
     </div>
   );
 }

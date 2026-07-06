@@ -1,4 +1,7 @@
 import type { ProjectFile } from './types';
+import { sanitizeFilename, validateProjectFile } from './validation';
+
+const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
 
 function download(filename: string, content: string, mime: string): void {
   const blob = new Blob([content], { type: mime });
@@ -11,18 +14,28 @@ function download(filename: string, content: string, mime: string): void {
 }
 
 export function exportPython(name: string, code: string): void {
-  download(`${name || 'project'}.py`, code, 'text/x-python');
+  download(`${sanitizeFilename(name)}.py`, code, 'text/x-python');
 }
 
 export function exportProjectJson(project: ProjectFile): void {
-  download(`${project.name || 'project'}.json`, JSON.stringify(project, null, 2), 'application/json');
+  download(`${sanitizeFilename(project.name)}.json`, JSON.stringify(project, null, 2), 'application/json');
 }
 
+/**
+ * Reads and validates an imported project file. All failure modes (wrong file
+ * type, oversized file, invalid JSON, wrong shape, future format versions)
+ * throw an Error with a beginner-readable message.
+ */
 export async function readProjectJsonFile(file: File): Promise<ProjectFile> {
-  const text = await file.text();
-  const parsed = JSON.parse(text) as ProjectFile;
-  if (parsed.formatVersion !== 1 || !parsed.workspaceJson) {
-    throw new Error('This file is not a valid Coding Circus project.');
+  if (file.size > MAX_IMPORT_BYTES) {
+    throw new Error('That file is too large to be a Coding Circus project.');
   }
-  return parsed;
+  const text = await file.text();
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new Error('That file is not valid JSON, so it cannot be a Coding Circus project.');
+  }
+  return validateProjectFile(parsed);
 }

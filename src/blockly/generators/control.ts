@@ -1,5 +1,5 @@
-import * as Blockly from 'blockly/core';
 import { pythonGenerator, Order } from 'blockly/python';
+import { addDefinition, distinctName } from './helpers';
 
 function branchOrPass(branch: string): string {
   return branch || `${pythonGenerator.INDENT}pass\n`;
@@ -21,7 +21,7 @@ pythonGenerator.forBlock['python_if_else'] = function (block, generator) {
 pythonGenerator.forBlock['python_repeat'] = function (block, generator) {
   const times = generator.valueToCode(block, 'TIMES', Order.NONE) || '0';
   const branch = branchOrPass(generator.statementToCode(block, 'DO'));
-  const loopVar = generator.nameDB_!.getDistinctName('count', Blockly.Names.NameType.VARIABLE);
+  const loopVar = distinctName(generator, 'count');
   return `for ${loopVar} in range(${times}):\n${branch}`;
 };
 
@@ -32,7 +32,29 @@ pythonGenerator.forBlock['python_while'] = function (block, generator) {
 };
 
 pythonGenerator.forBlock['python_wait'] = function (block, generator) {
-  (generator as unknown as { definitions_: Record<string, string> }).definitions_['import_time'] = 'import time';
+  addDefinition(generator, 'import_time', 'import time');
   const seconds = generator.valueToCode(block, 'SECONDS', Order.NONE) || '0';
   return `time.sleep(${seconds})\n`;
+};
+
+pythonGenerator.forBlock['python_repeat_until'] = function (block, generator) {
+  const condition = generator.valueToCode(block, 'CONDITION', Order.LOGICAL_NOT) || 'True';
+  const branch = branchOrPass(generator.statementToCode(block, 'DO'));
+  return `while not ${condition}:\n${branch}`;
+};
+
+pythonGenerator.forBlock['python_count_with'] = function (block, generator) {
+  const loopVar = generator.getVariableName(block.getFieldValue('VAR'));
+  const from = generator.valueToCode(block, 'FROM', Order.NONE) || '0';
+  const to = generator.valueToCode(block, 'TO', Order.ADDITIVE) || '0';
+  const branch = branchOrPass(generator.statementToCode(block, 'DO'));
+  return `for ${loopVar} in range(${from}, ${to} + 1):\n${branch}`;
+};
+
+pythonGenerator.forBlock['python_break'] = function () {
+  return 'break\n';
+};
+
+pythonGenerator.forBlock['python_continue'] = function () {
+  return 'continue\n';
 };

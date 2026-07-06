@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { EXAMPLES } from '../examples';
 
 interface ToolbarProps {
   isRunning: boolean;
@@ -14,6 +15,7 @@ interface ToolbarProps {
   onExportProject: () => void;
   onImportProjectFile: (file: File) => void;
   onReplayIntro?: () => void;
+  onLoadExample?: (id: string) => void;
 }
 
 export function Toolbar({
@@ -30,6 +32,7 @@ export function Toolbar({
   onExportProject,
   onImportProjectFile,
   onReplayIntro,
+  onLoadExample,
 }: ToolbarProps) {
   const importInputRef = useRef<HTMLInputElement>(null);
 
@@ -48,6 +51,28 @@ export function Toolbar({
           ↺ Reset
         </button>
       </div>
+
+      {onLoadExample && (
+        <div className="toolbar-group">
+          <select
+            className="project-load-select"
+            value=""
+            aria-label="Load an example project"
+            onChange={(e) => {
+              if (e.target.value) onLoadExample(e.target.value);
+            }}
+          >
+            <option value="" disabled>
+              Examples…
+            </option>
+            {EXAMPLES.map((example) => (
+              <option key={example.id} value={example.id}>
+                {example.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="toolbar-group toolbar-project">
         <input
@@ -97,7 +122,7 @@ export function Toolbar({
         />
         {onReplayIntro && (
           <button className="btn" onClick={onReplayIntro}>
-            ↻ Intro
+            🎬 Demo
           </button>
         )}
       </div>
