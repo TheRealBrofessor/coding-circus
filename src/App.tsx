@@ -115,10 +115,16 @@ export default function App() {
 
   const handleSave = useCallback(() => {
     const workspace = workspaceRef.current;
-    if (!workspace || !projectName.trim()) return;
-    saveProject(projectName.trim(), Blockly.serialization.workspaces.save(workspace));
-    setSavedProjects(listProjects());
-  }, [projectName]);
+    if (!workspace) return;
+    try {
+      const saved = saveProject(projectName, Blockly.serialization.workspaces.save(workspace));
+      setSavedProjects(listProjects());
+      setProjectName(saved.name);
+      appendConsole('system', `Saved "${saved.name}".`);
+    } catch (err) {
+      appendConsole('system', err instanceof Error ? err.message : 'Could not save the project.');
+    }
+  }, [projectName, appendConsole]);
 
   const handleLoad = useCallback(
     (name: string) => {
@@ -159,9 +165,13 @@ export default function App() {
     const workspace = workspaceRef.current;
     if (!workspace) return;
     const demoName = 'coding-circus-demo';
-    saveProject(demoName, Blockly.serialization.workspaces.save(workspace));
-    setSavedProjects(listProjects());
-    setProjectName(demoName);
+    try {
+      saveProject(demoName, Blockly.serialization.workspaces.save(workspace));
+      setSavedProjects(listProjects());
+      setProjectName(demoName);
+    } catch {
+      // Demo auto-save is best-effort; storage may be unavailable.
+    }
   }, []);
 
   const dismissIntro = useCallback(() => {
