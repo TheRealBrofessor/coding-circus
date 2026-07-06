@@ -79,6 +79,12 @@ export default function App() {
       timeoutMs: RUN_TIMEOUT_MS,
       onStdout: (chunk) => {
         appendConsole('stdout', chunk);
+        // Stage convention: the stage mirrors the latest printed line, and an
+        // empty printed line (the "clear the stage" block) blanks it.
+        if (chunk.trim() === '') {
+          setStageText('');
+          return;
+        }
         const lastLine = chunk.split('\n').filter((l) => l.length > 0).pop();
         if (lastLine) setStageText(lastLine);
       },
