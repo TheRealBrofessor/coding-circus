@@ -3,6 +3,7 @@ import * as Blockly from 'blockly/core';
 import { BlockEditor } from './components/BlockEditor';
 import { CodePanel } from './components/CodePanel';
 import { ConsolePanel, type ConsoleLine } from './components/ConsolePanel';
+import { Landing } from './components/Landing';
 import { LiveDemo } from './components/LiveDemo';
 import { StagePanel } from './components/StagePanel';
 import { Toolbar } from './components/Toolbar';
@@ -11,10 +12,14 @@ import type { NormalizedError } from './runner/RunResult';
 import { listProjects, loadProject, saveProject } from './project/ProjectStorage';
 import { exportProjectJson, exportPython, readProjectJsonFile } from './project/ProjectExport';
 import type { ProjectFile } from './project/types';
+import { EXAMPLES } from './examples';
 import './App.css';
 
 const RUN_TIMEOUT_MS = 20_000;
 const INTRO_SESSION_KEY = 'coding-circus:intro-seen';
+
+/** Which full-screen overlay is showing: the landing hero, the self-building demo, or none. */
+type Overlay = 'landing' | 'demo' | null;
 
 /**
  * Loads serialized workspace state, treating the input as untrusted: a corrupt
@@ -44,11 +49,11 @@ export default function App() {
   const [showRawTraceback, setShowRawTraceback] = useState(false);
   const [projectName, setProjectName] = useState('my-first-program');
   const [savedProjects, setSavedProjects] = useState<string[]>([]);
-  const [showIntro, setShowIntro] = useState(() => {
+  const [overlay, setOverlay] = useState<Overlay>(() => {
     try {
-      return sessionStorage.getItem(INTRO_SESSION_KEY) !== '1';
+      return sessionStorage.getItem(INTRO_SESSION_KEY) === '1' ? null : 'landing';
     } catch {
-      return true;
+      return 'landing';
     }
   });
 
@@ -174,16 +179,44 @@ export default function App() {
     }
   }, []);
 
-  const dismissIntro = useCallback(() => {
-    setShowIntro(false);
+  const markIntroSeen = useCallback(() => {
     try {
       sessionStorage.setItem(INTRO_SESSION_KEY, '1');
     } catch {
-      // Session storage may be unavailable (private browsing); the intro will just replay next load.
+      // Session storage may be unavailable (private browsing); the landing will just show again next load.
     }
   }, []);
 
-  const replayIntro = useCallback(() => setShowIntro(true), []);
+  const handleStartCoding = useCallback(() => {
+    markIntroSeen();
+    setOverlay(null);
+  }, [markIntroSeen]);
+
+  const handleWatchDemo = useCallback(() => {
+    markIntroSeen();
+    setOverlay('demo');
+  }, [markIntroSeen]);
+
+  const dismissDemo = useCallback(() => {
+    markIntroSeen();
+    setOverlay(null);
+  }, [markIntroSeen]);
+
+  const handleLoadExample = useCallback(
+    (id: string) => {
+      const workspace = workspaceRef.current;
+      const example = EXAMPLES.find((e) => e.id === id);
+      if (!workspace || !example) return;
+      const result = loadWorkspaceState(workspace, example.state);
+      if (!result.ok) {
+        appendConsole('system', result.message);
+        return;
+      }
+      setProjectName(example.projectName);
+      appendConsole('system', `Loaded example "${example.label}". Click ▶ Run to try it!`);
+    },
+    [appendConsole],
+  );
 
   const handleImportProjectFile = useCallback(
     async (file: File) => {
@@ -222,7 +255,8 @@ export default function App() {
         onExportPython={handleExportPython}
         onExportProject={handleExportProject}
         onImportProjectFile={handleImportProjectFile}
-        onReplayIntro={replayIntro}
+        onReplayIntro={handleWatchDemo}
+        onLoadExample={handleLoadExample}
       />
       <div className="app-body">
         <BlockEditor
@@ -242,14 +276,15 @@ export default function App() {
           <StagePanel text={stageText} isRunning={isRunning} />
         </div>
       </div>
-      {showIntro && (
+      {overlay === 'demo' && (
         <LiveDemo
           workspaceRef={workspaceRef}
-          onReveal={dismissIntro}
+          onReveal={dismissDemo}
           onRunDemo={handleRun}
           onSaveDemo={handleSaveDemo}
         />
       )}
+      {overlay === 'landing' && <Landing onStartCoding={handleStartCoding} onWatchDemo={handleWatchDemo} />}
     </div>
   );
 }

@@ -1,0 +1,127 @@
+.landing {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(ellipse at top, #2a2347 0%, #16112b 65%, #0e0a1d 100%);
+  overflow: auto;
+}
+
+.landing-card {
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+  color: #f0edf8;
+  animation: landingFadeIn 0.5s ease both;
+}
+
+.landing-emoji {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.landing-title {
+  margin: 12px 0 8px;
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #fff;
+  text-shadow: 0 0 24px rgba(122, 92, 255, 0.45);
+}
+
+.landing-tagline {
+  margin: 0 auto 20px;
+  max-width: 460px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #cfc7ea;
+}
+
+.landing-features {
+  list-style: none;
+  margin: 0 auto 26px;
+  padding: 0;
+  display: inline-block;
+  text-align: left;
+  font-size: 15px;
+  line-height: 2;
+  color: #ddd6f3;
+}
+
+.landing-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.landing-btn {
+  padding: 12px 22px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: #382f5c;
+  border: 1px solid #504280;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.landing-btn:hover {
+  background: #4a3d78;
+}
+
+.landing-btn:focus-visible {
+  outline: 2px solid #b7a4ff;
+  outline-offset: 2px;
+}
+
+.landing-btn-primary {
+  background: #1f9d55;
+  border-color: #2bbf68;
+}
+
+.landing-btn-primary:hover {
+  background: #24b862;
+}
+
+.landing-footnote {
+  margin: 0 auto;
+  max-width: 440px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #9a8fc0;
+}
+
+.landing-footnote a {
+  color: #b7a4ff;
+}
+
+@keyframes landingFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-card {
+    animation: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .landing-title {
+    font-size: 34px;
+  }
+  .landing-tagline {
+    font-size: 16px;
+  }
+}
