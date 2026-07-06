@@ -15,9 +15,27 @@ The MVP intentionally does not depend on a backend server — everything (Blockl
 
 ## Block engine
 
-Blockly (`blockly` npm package, core only — `blockly/core`) is the block engine. We do not use Blockly's stock toolbox; instead we define our own namespaced `python_*` blocks so the toolbox only ever shows Python-relevant primitives (values, variables, text/print, math, logic, control flow). Block JSON definitions live in `src/blockly/blocks/*.ts`, one file per category, registered via `src/blockly/blocks/index.ts`.
+Blockly (`blockly` npm package, core only — `blockly/core`) is the block engine. We do not use Blockly's stock toolbox; instead we define our own namespaced `python_*` blocks so the toolbox only ever shows Python-relevant primitives across twelve categories (Values, Variables, Text, Math, Logic, Control, Input, Lists, Random, Functions, Debug, Stage — see [BLOCKS.md](BLOCKS.md) for the full inventory). Block JSON definitions live in `src/blockly/blocks/*.ts`, one file per category, registered via `src/blockly/blocks/index.ts`.
 
 Code generation reuses Blockly's maintained `pythonGenerator` (from `blockly/python`) rather than a hand-rolled generator, registering a `forBlock[type]` function per custom block type (`src/blockly/generators/*.ts`). This gets us correct operator-precedence parenthesization, indentation, and variable-name legalization for free, while every block we expose is still fully custom. `generatePython()` (`src/blockly/setup.ts`) is the single entry point the UI calls.
+
+### Generator safety rules
+
+Field values are treated as untrusted (corrupt or hand-edited project JSON can contain anything), and `src/blockly/generators/helpers.ts` is the enforcement point:
+
+- Dropdown operators go through `pickOperator` (unknown values fall back to a safe default instead of crashing).
+- Number fields go through `safeNumber` (NaN/Infinity become `0`, never invalid Python).
+- Comment text goes through `sanitizeInlineText` (line breaks collapse to spaces, so a field value cannot inject extra Python lines).
+- Typed function names go through `legalizePythonName` (legal identifier, keyword-safe).
+- Blockly's protected `definitions_` (hoisted imports) and `nameDB_` (collision-free loop variables) are only touched via `addDefinition`/`distinctName`, keeping the unsafe casts in one commented place.
+- Empty statement branches always generate `pass`.
+
+### Design decisions worth knowing
+
+- **Input blocks** generate standard `input(...)` Python, but the in-browser runner has no interactive stdin: making `input()` block synchronously inside a worker requires `SharedArrayBuffer` + cross-origin isolation headers, which static hosting (GitHub Pages) cannot provide. The runner instead normalizes the resulting `EOFError`/`OSError` into a friendly "export and run with desktop Python" hint. `LocalPythonRunner` (below) would support input natively.
+- **Stage blocks** compile to plain `print()` calls. The Stage panel mirrors the latest printed line, and an empty printed line clears it. This keeps exported programs 100% standard Python with no Coding Circus runtime library.
+- **Functions have no parameters.** Parameterized functions need Blockly mutators (dynamic block shapes); the beginner set trades that away for simplicity. Define/call blocks are matched by typed name.
+- **List indexing is Python-native (0-based)** — the point of the tool is learning real Python, so `lst[0]` is shown as-is rather than Scratch-style 1-based indexing.
 
 If Blockly ever needs to be replaced, the replacement only needs to (a) render a workspace, (b) fire a change event the UI can listen to, and (c) let `generatePython`-equivalent code walk it — nothing else in the app depends on Blockly internals directly except `BlockEditor.tsx` and the `blockly/` directory.
 
@@ -66,4 +84,11 @@ These share the same `RunnerInterface`/`RunResult` contract, so the UI (`App.tsx
 
 - **Save/Load**: the Blockly workspace is serialized with `Blockly.serialization.workspaces.save(workspace)` (plain JSON, not XML) and stored in `localStorage`, keyed by project name, with an index key tracking known project names (`src/project/ProjectStorage.ts`).
 - **Export**: `Export .py` downloads the currently generated Python source. `Export project` downloads a `.json` file (`{ formatVersion, name, updatedAt, workspaceJson }`) that fully round-trips through `Import project`.
-- Projects are local-only in the MVP (no accounts, no sync) — consistent with "no backend server."
+- **Untrusted-data posture** (`src/project/validation.ts`): every read path assumes the data may be corrupt. Imported files are shape-validated (with a distinct "made with a newer version" message for future `formatVersion`s — the migration hook lives in `validateProjectFile`), stored entries that fail parsing load as `null` instead of throwing, the name index self-heals, download filenames are sanitized, and workspace deserialization failures surface a console message over a cleared workspace instead of crashing. Name collisions on import are renamed `"(imported)"`.
+- Projects are local-only (no accounts, no sync) — consistent with "no backend server."
+
+## Static site & deployment
+
+- The app is a fully client-side Vite build (`npm run build` → `dist/`), hostable on any static file server. The only runtime network dependency is the Pyodide CDN fetch on first Run (disclosed on the landing screen).
+- First visit shows a landing hero (`Landing.tsx`) with a "Start Coding" CTA and an opt-in self-building demo (`LiveDemo.tsx` + `src/demo/`); starter projects live in `src/examples/` as workspace JSON and load through the same guarded path as saved projects.
+- GitHub Pages: `.github/workflows/deploy-pages.yml` builds with `--base=/coding-circus/` and deploys via `actions/deploy-pages`. Blockly's media path is `BASE_URL`-relative so the editor works from a subpath. Pages must be enabled with source "GitHub Actions" (public repo required on GitHub Free).
