@@ -60,7 +60,7 @@ export function AboutPage({ onClose }: AboutPageProps) {
           <div>
             <h2>Tier 1 direction</h2>
             <ul>
-              <li>29 focused beginner Python blocks.</li>
+              <li>29 focused Python blocks.</li>
               <li>Local save, load, import, and export.</li>
               <li>Static site first.</li>
               <li>Backend-ready path for accounts and project sharing.</li>
