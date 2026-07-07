@@ -63,6 +63,15 @@ export default function App() {
     setConsoleLines((prev) => [...prev, { kind, text }]);
   }, []);
 
+  const markIntroSeen = useCallback(() => {
+    setShowIntro(false);
+    try {
+      sessionStorage.setItem(INTRO_SESSION_KEY, '1');
+    } catch {
+      // Session storage may be unavailable (private browsing); the intro will just replay next load.
+    }
+  }, []);
+
   const saveCurrentProject = useCallback(
     (nameOverride?: string) => {
       const workspace = workspaceRef.current;
@@ -125,9 +134,16 @@ export default function App() {
 
   const handleReset = useCallback(async () => {
     runnerRef.current!.stop();
+    if (showIntro) {
+      markIntroSeen();
+      workspaceRef.current?.clear();
+      setCode('');
+      setProjectName(DEFAULT_PROJECT_NAME);
+    }
+    setNewProjectDialog({ isOpen: false, projectName: '' });
     clearRuntimeOutput();
     await runnerRef.current!.reset();
-  }, [clearRuntimeOutput]);
+  }, [clearRuntimeOutput, markIntroSeen, showIntro]);
 
   const handleNewProject = useCallback(async () => {
     const workspace = workspaceRef.current;
@@ -196,13 +212,8 @@ export default function App() {
   }, []);
 
   const dismissIntro = useCallback(() => {
-    setShowIntro(false);
-    try {
-      sessionStorage.setItem(INTRO_SESSION_KEY, '1');
-    } catch {
-      // Session storage may be unavailable (private browsing); the intro will just replay next load.
-    }
-  }, []);
+    markIntroSeen();
+  }, [markIntroSeen]);
 
   const replayIntro = useCallback(() => setShowIntro(true), []);
 
