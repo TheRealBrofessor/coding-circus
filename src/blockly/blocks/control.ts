@@ -54,6 +54,21 @@ Blockly.common.defineBlocksWithJsonArray([
     helpUrl: '',
   },
   {
+    type: 'python_for_each',
+    message0: 'for each %1 in %2',
+    args0: [
+      { type: 'field_variable', name: 'VAR', variable: 'item' },
+      { type: 'input_value', name: 'LIST' },
+    ],
+    message1: '%1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: null,
+    nextStatement: null,
+    colour: HUE,
+    tooltip: 'Run the enclosed blocks once for each item in a list.',
+    helpUrl: '',
+  },
+  {
     type: 'python_wait',
     message0: 'wait %1 seconds',
     args0: [{ type: 'input_value', name: 'SECONDS', check: 'Number' }],
