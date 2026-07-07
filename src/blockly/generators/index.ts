@@ -3,9 +3,13 @@
 // so codegen for one kind of block can change without touching the others.
 import './values';
 import './variables';
+import './inputOutput';
 import './text';
 import './math';
 import './logic';
+import './randomness';
+import './lists';
 import './control';
+import './functions';
 
 export { pythonGenerator } from 'blockly/python';
