@@ -3,7 +3,11 @@
 // touching unrelated ones.
 import './values';
 import './variables';
+import './inputOutput';
 import './text';
 import './math';
 import './logic';
+import './randomness';
+import './lists';
 import './control';
+import './functions';
