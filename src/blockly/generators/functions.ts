@@ -1,4 +1,4 @@
-import { pythonGenerator } from 'blockly/python';
+import { pythonGenerator, Order } from 'blockly/python';
 
 function branchOrPass(branch: string): string {
   return branch || `${pythonGenerator.INDENT}pass\n`;
@@ -22,6 +22,6 @@ pythonGenerator.forBlock['python_function_call'] = function (block) {
 };
 
 pythonGenerator.forBlock['python_return'] = function (block, generator) {
-  const value = generator.valueToCode(block, 'VALUE', 0) || 'None';
+  const value = generator.valueToCode(block, 'VALUE', Order.NONE) || 'None';
   return `return ${value}\n`;
 };
