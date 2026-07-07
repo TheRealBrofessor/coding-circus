@@ -88,6 +88,17 @@
   background: #fff;
 }
 
+.block-editor .blocklyZoom,
+.block-editor .blocklyTrash,
+.block-editor .blocklyScrollbarHorizontal,
+.block-editor .blocklyScrollbarVertical,
+.block-editor .blocklyScrollbarHandle,
+.block-editor .blocklyScrollbarBackground {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 .app-side {
   flex: 1 1 0;
   min-width: 340px;
