@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import type { DemoExample } from '../demo/liveDemoScript';
 
 interface ToolbarProps {
   isRunning: boolean;
@@ -15,6 +16,9 @@ interface ToolbarProps {
   onExportProject: () => void;
   onImportProjectFile: (file: File) => void;
   onReplayIntro?: () => void;
+  demoExamples: DemoExample[];
+  selectedDemoId: string;
+  onSelectedDemoChange: (id: string) => void;
   onAbout: () => void;
 }
 
@@ -33,6 +37,9 @@ export function Toolbar({
   onExportProject,
   onImportProjectFile,
   onReplayIntro,
+  demoExamples,
+  selectedDemoId,
+  onSelectedDemoChange,
   onAbout,
 }: ToolbarProps) {
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -46,9 +53,23 @@ export function Toolbar({
           ▶ Run
         </button>
         {onReplayIntro && (
-          <button className="btn" onClick={onReplayIntro}>
-            Demo
-          </button>
+          <>
+            <button className="btn" onClick={onReplayIntro}>
+              Demo
+            </button>
+            <select
+              className="project-load-select demo-example-select"
+              value={selectedDemoId}
+              aria-label="Demo example"
+              onChange={(e) => onSelectedDemoChange(e.target.value)}
+            >
+              {demoExamples.map((demo) => (
+                <option key={demo.id} value={demo.id}>
+                  {demo.name}
+                </option>
+              ))}
+            </select>
+          </>
         )}
         <button className="btn" onClick={onStop} disabled={!isRunning}>
           ■ Stop
