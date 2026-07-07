@@ -15,6 +15,7 @@ interface ToolbarProps {
   onExportProject: () => void;
   onImportProjectFile: (file: File) => void;
   onReplayIntro?: () => void;
+  onAbout: () => void;
 }
 
 export function Toolbar({
@@ -32,6 +33,7 @@ export function Toolbar({
   onExportProject,
   onImportProjectFile,
   onReplayIntro,
+  onAbout,
 }: ToolbarProps) {
   const importInputRef = useRef<HTMLInputElement>(null);
 
@@ -105,6 +107,9 @@ export function Toolbar({
             ↻ Intro
           </button>
         )}
+        <button className="btn btn-about" onClick={onAbout}>
+          About
+        </button>
       </div>
     </div>
   );
