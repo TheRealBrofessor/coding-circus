@@ -65,8 +65,10 @@ export async function playLiveDemo(
   script: DemoScript,
   isCancelled: () => boolean,
 ): Promise<void> {
-  const restX = 60;
-  const restY = 40;
+  const restX = 24;
+  const restY = 18;
+
+  workspace.clear();
 
   const container = Blockly.serialization.blocks.append(
     {
