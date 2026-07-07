@@ -86,12 +86,16 @@ export default function App() {
   }, []);
 
   const handleReset = useCallback(async () => {
-    appendConsole('system', 'Resetting Python interpreter…');
-    await runnerRef.current!.reset();
+    runnerRef.current!.stop();
+    workspaceRef.current?.clear();
+    setCode('');
     setConsoleLines([]);
     setStageText('');
     setError(null);
-  }, [appendConsole]);
+    setShowRawTraceback(false);
+    setIsRunning(false);
+    await runnerRef.current!.reset();
+  }, []);
 
   const handleSave = useCallback(() => {
     const workspace = workspaceRef.current;
