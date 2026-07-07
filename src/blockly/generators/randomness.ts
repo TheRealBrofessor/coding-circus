@@ -1,7 +1,7 @@
 import { pythonGenerator, Order } from 'blockly/python';
 
-function requireRandom(generator: typeof pythonGenerator): void {
-  (generator as unknown as { definitions_: Record<string, string> }).definitions_['import_random'] = 'import random';
+function requireRandom(generator: unknown): void {
+  (generator as { definitions_: Record<string, string> }).definitions_['import_random'] = 'import random';
 }
 
 pythonGenerator.forBlock['python_random_int'] = function (block, generator) {
