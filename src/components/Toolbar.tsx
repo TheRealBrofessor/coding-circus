@@ -45,6 +45,11 @@ export function Toolbar({
         <button className="btn btn-run" onClick={onRun} disabled={isRunning}>
           ▶ Run
         </button>
+        {onReplayIntro && (
+          <button className="btn" onClick={onReplayIntro}>
+            Demo
+          </button>
+        )}
         <button className="btn" onClick={onStop} disabled={!isRunning}>
           ■ Stop
         </button>
@@ -102,11 +107,6 @@ export function Toolbar({
             e.target.value = '';
           }}
         />
-        {onReplayIntro && (
-          <button className="btn" onClick={onReplayIntro}>
-            ↻ Intro
-          </button>
-        )}
         <button className="btn btn-about" onClick={onAbout}>
           About
         </button>
