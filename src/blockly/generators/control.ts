@@ -31,6 +31,13 @@ pythonGenerator.forBlock['python_while'] = function (block, generator) {
   return `while ${condition}:\n${branch}`;
 };
 
+pythonGenerator.forBlock['python_for_each'] = function (block, generator) {
+  const varName = generator.getVariableName(block.getFieldValue('VAR'));
+  const listValue = generator.valueToCode(block, 'LIST', Order.NONE) || '[]';
+  const branch = branchOrPass(generator.statementToCode(block, 'DO'));
+  return `for ${varName} in ${listValue}:\n${branch}`;
+};
+
 pythonGenerator.forBlock['python_wait'] = function (block, generator) {
   (generator as unknown as { definitions_: Record<string, string> }).definitions_['import_time'] = 'import time';
   const seconds = generator.valueToCode(block, 'SECONDS', Order.NONE) || '0';
