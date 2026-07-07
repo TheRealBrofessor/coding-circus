@@ -15,6 +15,7 @@ import './App.css';
 
 const RUN_TIMEOUT_MS = 20_000;
 const INTRO_SESSION_KEY = 'coding-circus:intro-seen';
+const DEFAULT_PROJECT_NAME = 'my-first-program';
 
 function loadWorkspaceState(workspace: Blockly.Workspace, state: unknown): void {
   workspace.clear();
@@ -28,7 +29,7 @@ export default function App() {
   const [stageText, setStageText] = useState('');
   const [error, setError] = useState<NormalizedError | null>(null);
   const [showRawTraceback, setShowRawTraceback] = useState(false);
-  const [projectName, setProjectName] = useState('my-first-program');
+  const [projectName, setProjectName] = useState(DEFAULT_PROJECT_NAME);
   const [savedProjects, setSavedProjects] = useState<string[]>([]);
   const [showIntro, setShowIntro] = useState(() => {
     try {
@@ -53,6 +54,22 @@ export default function App() {
 
   const appendConsole = useCallback((kind: ConsoleLine['kind'], text: string) => {
     setConsoleLines((prev) => [...prev, { kind, text }]);
+  }, []);
+
+  const saveCurrentProject = useCallback(() => {
+    const workspace = workspaceRef.current;
+    if (!workspace || !projectName.trim()) return false;
+    saveProject(projectName.trim(), Blockly.serialization.workspaces.save(workspace));
+    setSavedProjects(listProjects());
+    return true;
+  }, [projectName]);
+
+  const clearRuntimeOutput = useCallback(() => {
+    setConsoleLines([]);
+    setStageText('');
+    setError(null);
+    setShowRawTraceback(false);
+    setIsRunning(false);
   }, []);
 
   const handleRun = useCallback(async () => {
@@ -87,22 +104,37 @@ export default function App() {
 
   const handleReset = useCallback(async () => {
     runnerRef.current!.stop();
-    workspaceRef.current?.clear();
-    setCode('');
-    setConsoleLines([]);
-    setStageText('');
-    setError(null);
-    setShowRawTraceback(false);
-    setIsRunning(false);
+    clearRuntimeOutput();
     await runnerRef.current!.reset();
-  }, []);
+  }, [clearRuntimeOutput]);
+
+  const handleNewProject = useCallback(async () => {
+    const workspace = workspaceRef.current;
+    const hasBlocks = Boolean(workspace?.getTopBlocks(false).length);
+    const hasCode = code.trim().length > 0;
+    const hasUnsavedWork = hasBlocks || hasCode;
+
+    if (hasUnsavedWork) {
+      const shouldSave = window.confirm('Save this project before starting a new one?');
+      if (shouldSave) {
+        saveCurrentProject();
+      } else {
+        const shouldDiscard = window.confirm('Start a new project without saving this one?');
+        if (!shouldDiscard) return;
+      }
+    }
+
+    runnerRef.current!.stop();
+    workspace?.clear();
+    setCode('');
+    setProjectName(DEFAULT_PROJECT_NAME);
+    clearRuntimeOutput();
+    await runnerRef.current!.reset();
+  }, [clearRuntimeOutput, code, saveCurrentProject]);
 
   const handleSave = useCallback(() => {
-    const workspace = workspaceRef.current;
-    if (!workspace || !projectName.trim()) return;
-    saveProject(projectName.trim(), Blockly.serialization.workspaces.save(workspace));
-    setSavedProjects(listProjects());
-  }, [projectName]);
+    saveCurrentProject();
+  }, [saveCurrentProject]);
 
   const handleLoad = useCallback((name: string) => {
     const workspace = workspaceRef.current;
@@ -170,6 +202,7 @@ export default function App() {
         onRun={handleRun}
         onStop={handleStop}
         onReset={handleReset}
+        onNewProject={handleNewProject}
         projectName={projectName}
         onProjectNameChange={setProjectName}
         savedProjects={savedProjects}
