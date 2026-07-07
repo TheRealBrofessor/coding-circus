@@ -29,14 +29,23 @@ export const toolbox: Blockly.utils.toolbox.ToolboxInfo = {
     },
     {
       kind: 'category',
-      name: 'Text',
-      colour: '160',
+      name: 'Input / Output',
+      colour: '20',
       contents: [
+        { kind: 'block', type: 'python_input_text' },
+        { kind: 'block', type: 'python_input_number' },
         {
           kind: 'block',
           type: 'python_print',
           inputs: { VALUE: { shadow: { type: 'python_string', fields: { TEXT: 'Hello, world!' } } } },
         },
+      ],
+    },
+    {
+      kind: 'category',
+      name: 'Text',
+      colour: '160',
+      contents: [
         { kind: 'block', type: 'python_join' },
         { kind: 'block', type: 'python_comment' },
       ],
@@ -68,6 +77,65 @@ export const toolbox: Blockly.utils.toolbox.ToolboxInfo = {
     },
     {
       kind: 'category',
+      name: 'Randomness',
+      colour: '35',
+      contents: [
+        {
+          kind: 'block',
+          type: 'python_random_int',
+          inputs: {
+            A: { shadow: { type: 'python_number', fields: { NUM: 1 } } },
+            B: { shadow: { type: 'python_number', fields: { NUM: 10 } } },
+          },
+        },
+        {
+          kind: 'block',
+          type: 'python_random_choice',
+          inputs: {
+            LIST: {
+              shadow: {
+                type: 'python_list_create',
+                inputs: {
+                  A: { shadow: { type: 'python_string', fields: { TEXT: 'heads' } } },
+                  B: { shadow: { type: 'python_string', fields: { TEXT: 'tails' } } },
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
+    {
+      kind: 'category',
+      name: 'Lists',
+      colour: '260',
+      contents: [
+        {
+          kind: 'block',
+          type: 'python_list_create',
+          inputs: {
+            A: { shadow: { type: 'python_string', fields: { TEXT: 'apple' } } },
+            B: { shadow: { type: 'python_string', fields: { TEXT: 'banana' } } },
+            C: { shadow: { type: 'python_string', fields: { TEXT: 'cherry' } } },
+          },
+        },
+        {
+          kind: 'block',
+          type: 'python_list_append',
+          inputs: {
+            ITEM: { shadow: { type: 'python_string', fields: { TEXT: 'new item' } } },
+          },
+        },
+        {
+          kind: 'block',
+          type: 'python_list_get',
+          inputs: { INDEX: { shadow: { type: 'python_number', fields: { NUM: 0 } } } },
+        },
+        { kind: 'block', type: 'python_list_length' },
+      ],
+    },
+    {
+      kind: 'category',
       name: 'Control',
       colour: '120',
       contents: [
@@ -79,10 +147,25 @@ export const toolbox: Blockly.utils.toolbox.ToolboxInfo = {
           inputs: { TIMES: { shadow: { type: 'python_number', fields: { NUM: 10 } } } },
         },
         { kind: 'block', type: 'python_while' },
+        { kind: 'block', type: 'python_for_each' },
         {
           kind: 'block',
           type: 'python_wait',
           inputs: { SECONDS: { shadow: { type: 'python_number', fields: { NUM: 0.5 } } } },
+        },
+      ],
+    },
+    {
+      kind: 'category',
+      name: 'Functions',
+      colour: '290',
+      contents: [
+        { kind: 'block', type: 'python_function_def' },
+        { kind: 'block', type: 'python_function_call' },
+        {
+          kind: 'block',
+          type: 'python_return',
+          inputs: { VALUE: { shadow: { type: 'python_string', fields: { TEXT: 'result' } } } },
         },
       ],
     },
