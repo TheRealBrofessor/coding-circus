@@ -33,6 +33,10 @@ export default function App() {
   const [projectName, setProjectName] = useState(DEFAULT_PROJECT_NAME);
   const [savedProjects, setSavedProjects] = useState<string[]>([]);
   const [showAbout, setShowAbout] = useState(false);
+  const [newProjectDialog, setNewProjectDialog] = useState<{ isOpen: boolean; projectName: string }>({
+    isOpen: false,
+    projectName: '',
+  });
   const [showIntro, setShowIntro] = useState(() => {
     try {
       return sessionStorage.getItem(INTRO_SESSION_KEY) !== '1';
@@ -58,13 +62,18 @@ export default function App() {
     setConsoleLines((prev) => [...prev, { kind, text }]);
   }, []);
 
-  const saveCurrentProject = useCallback(() => {
-    const workspace = workspaceRef.current;
-    if (!workspace || !projectName.trim()) return false;
-    saveProject(projectName.trim(), Blockly.serialization.workspaces.save(workspace));
-    setSavedProjects(listProjects());
-    return true;
-  }, [projectName]);
+  const saveCurrentProject = useCallback(
+    (nameOverride?: string) => {
+      const workspace = workspaceRef.current;
+      const name = (nameOverride ?? projectName).trim();
+      if (!workspace || !name) return false;
+      saveProject(name, Blockly.serialization.workspaces.save(workspace));
+      setProjectName(name);
+      setSavedProjects(listProjects());
+      return true;
+    },
+    [projectName],
+  );
 
   const clearRuntimeOutput = useCallback(() => {
     setConsoleLines([]);
@@ -73,6 +82,15 @@ export default function App() {
     setShowRawTraceback(false);
     setIsRunning(false);
   }, []);
+
+  const startFreshProject = useCallback(async () => {
+    runnerRef.current!.stop();
+    workspaceRef.current?.clear();
+    setCode('');
+    setProjectName(DEFAULT_PROJECT_NAME);
+    clearRuntimeOutput();
+    await runnerRef.current!.reset();
+  }, [clearRuntimeOutput]);
 
   const handleRun = useCallback(async () => {
     setConsoleLines([]);
@@ -114,25 +132,30 @@ export default function App() {
     const workspace = workspaceRef.current;
     const hasBlocks = Boolean(workspace?.getTopBlocks(false).length);
     const hasCode = code.trim().length > 0;
-    const hasUnsavedWork = hasBlocks || hasCode;
 
-    if (hasUnsavedWork) {
-      const shouldSave = window.confirm('Save this project before starting a new one?');
-      if (shouldSave) {
-        saveCurrentProject();
-      } else {
-        const shouldDiscard = window.confirm('Start a new project without saving this one?');
-        if (!shouldDiscard) return;
-      }
+    if (!hasBlocks && !hasCode) {
+      await startFreshProject();
+      return;
     }
 
-    runnerRef.current!.stop();
-    workspace?.clear();
-    setCode('');
-    setProjectName(DEFAULT_PROJECT_NAME);
-    clearRuntimeOutput();
-    await runnerRef.current!.reset();
-  }, [clearRuntimeOutput, code, saveCurrentProject]);
+    setNewProjectDialog({
+      isOpen: true,
+      projectName: projectName === DEFAULT_PROJECT_NAME ? '' : projectName,
+    });
+  }, [code, projectName, startFreshProject]);
+
+  const handleSaveAndStartNew = useCallback(async () => {
+    const name = newProjectDialog.projectName.trim();
+    if (!name) return;
+    saveCurrentProject(name);
+    setNewProjectDialog({ isOpen: false, projectName: '' });
+    await startFreshProject();
+  }, [newProjectDialog.projectName, saveCurrentProject, startFreshProject]);
+
+  const handleDiscardAndStartNew = useCallback(async () => {
+    setNewProjectDialog({ isOpen: false, projectName: '' });
+    await startFreshProject();
+  }, [startFreshProject]);
 
   const handleSave = useCallback(() => {
     saveCurrentProject();
@@ -243,6 +266,33 @@ export default function App() {
         />
       )}
       {showAbout && <AboutPage onClose={() => setShowAbout(false)} />}
+      {newProjectDialog.isOpen && (
+        <div className="new-project-dialog" role="dialog" aria-modal="true" aria-labelledby="new-project-title">
+          <div className="new-project-card">
+            <h2 id="new-project-title">Save before starting new?</h2>
+            <p>There is code or blocks in the current project. Save it before opening a fresh workspace?</p>
+            <label className="new-project-label" htmlFor="new-project-name">
+              Project name
+            </label>
+            <input
+              id="new-project-name"
+              className="new-project-input"
+              value={newProjectDialog.projectName}
+              onChange={(e) => setNewProjectDialog((prev) => ({ ...prev, projectName: e.target.value }))}
+              placeholder="Name this project"
+              autoFocus
+            />
+            <div className="new-project-actions">
+              <button className="btn btn-run" onClick={handleSaveAndStartNew} disabled={!newProjectDialog.projectName.trim()}>
+                Yes, save
+              </button>
+              <button className="btn" onClick={handleDiscardAndStartNew}>
+                No, discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
