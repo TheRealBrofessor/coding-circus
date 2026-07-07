@@ -19,6 +19,7 @@ export function BlockEditor({ onCodeChange, onWorkspaceReady }: BlockEditorProps
       media: `${import.meta.env.BASE_URL}blockly-media/`,
       trashcan: false,
       zoom: { controls: false, wheel: true, pinch: true, startScale: 1 },
+      move: { scrollbars: false, drag: true, wheel: true },
       grid: { spacing: 20, length: 3, colour: '#e5e5e5', snap: true },
     });
     onWorkspaceReady(workspace);
