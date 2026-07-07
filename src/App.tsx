@@ -7,6 +7,7 @@ import { ConsolePanel, type ConsoleLine } from './components/ConsolePanel';
 import { LiveDemo } from './components/LiveDemo';
 import { StagePanel } from './components/StagePanel';
 import { Toolbar } from './components/Toolbar';
+import { DEFAULT_DEMO_ID, DEMO_EXAMPLES, getDemoExample } from './demo/liveDemoScript';
 import { BrowserPyodideRunner } from './runner/BrowserPyodideRunner';
 import type { NormalizedError } from './runner/RunResult';
 import { listProjects, loadProject, saveProject } from './project/ProjectStorage';
@@ -34,6 +35,7 @@ export default function App() {
   const [projectName, setProjectName] = useState(DEFAULT_PROJECT_NAME);
   const [savedProjects, setSavedProjects] = useState<string[]>([]);
   const [showAbout, setShowAbout] = useState(false);
+  const [selectedDemoId, setSelectedDemoId] = useState(DEFAULT_DEMO_ID);
   const [newProjectDialog, setNewProjectDialog] = useState<{ isOpen: boolean; projectName: string }>({
     isOpen: false,
     projectName: '',
@@ -46,6 +48,7 @@ export default function App() {
     }
   });
 
+  const selectedDemo = getDemoExample(selectedDemoId);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
   const runnerRef = useRef<BrowserPyodideRunner | null>(null);
   if (!runnerRef.current) runnerRef.current = new BrowserPyodideRunner();
@@ -205,11 +208,10 @@ export default function App() {
   const handleSaveDemo = useCallback(() => {
     const workspace = workspaceRef.current;
     if (!workspace) return;
-    const demoName = 'coding-circus-demo';
-    saveProject(demoName, Blockly.serialization.workspaces.save(workspace));
+    saveProject(`${selectedDemo.id}-demo`, Blockly.serialization.workspaces.save(workspace));
     setSavedProjects(listProjects());
-    setProjectName(demoName);
-  }, []);
+    setProjectName(`${selectedDemo.id}-demo`);
+  }, [selectedDemo.id]);
 
   const dismissIntro = useCallback(() => {
     markIntroSeen();
@@ -249,6 +251,9 @@ export default function App() {
         onExportProject={handleExportProject}
         onImportProjectFile={handleImportProjectFile}
         onReplayIntro={replayIntro}
+        demoExamples={DEMO_EXAMPLES}
+        selectedDemoId={selectedDemoId}
+        onSelectedDemoChange={setSelectedDemoId}
         onAbout={() => setShowAbout(true)}
       />
       <div className="app-body">
@@ -271,7 +276,9 @@ export default function App() {
       </div>
       {showIntro && (
         <LiveDemo
+          key={selectedDemo.id}
           workspaceRef={workspaceRef}
+          script={selectedDemo.script}
           onReveal={dismissIntro}
           onRunDemo={handleRun}
           onSaveDemo={handleSaveDemo}
