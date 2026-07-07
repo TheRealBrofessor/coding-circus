@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Blockly from 'blockly/core';
+import { AboutPage } from './components/AboutPage';
 import { BlockEditor } from './components/BlockEditor';
 import { CodePanel } from './components/CodePanel';
 import { ConsolePanel, type ConsoleLine } from './components/ConsolePanel';
@@ -31,6 +32,7 @@ export default function App() {
   const [showRawTraceback, setShowRawTraceback] = useState(false);
   const [projectName, setProjectName] = useState(DEFAULT_PROJECT_NAME);
   const [savedProjects, setSavedProjects] = useState<string[]>([]);
+  const [showAbout, setShowAbout] = useState(false);
   const [showIntro, setShowIntro] = useState(() => {
     try {
       return sessionStorage.getItem(INTRO_SESSION_KEY) !== '1';
@@ -212,6 +214,7 @@ export default function App() {
         onExportProject={handleExportProject}
         onImportProjectFile={handleImportProjectFile}
         onReplayIntro={replayIntro}
+        onAbout={() => setShowAbout(true)}
       />
       <div className="app-body">
         <BlockEditor
@@ -239,6 +242,7 @@ export default function App() {
           onSaveDemo={handleSaveDemo}
         />
       )}
+      {showAbout && <AboutPage onClose={() => setShowAbout(false)} />}
     </div>
   );
 }
