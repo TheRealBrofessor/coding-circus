@@ -5,6 +5,7 @@ interface ToolbarProps {
   onRun: () => void;
   onStop: () => void;
   onReset: () => void;
+  onNewProject: () => void;
   projectName: string;
   onProjectNameChange: (name: string) => void;
   savedProjects: string[];
@@ -21,6 +22,7 @@ export function Toolbar({
   onRun,
   onStop,
   onReset,
+  onNewProject,
   projectName,
   onProjectNameChange,
   savedProjects,
@@ -46,6 +48,9 @@ export function Toolbar({
         </button>
         <button className="btn" onClick={onReset}>
           ↺ Reset
+        </button>
+        <button className="btn" onClick={onNewProject}>
+          ＋ New
         </button>
       </div>
 
