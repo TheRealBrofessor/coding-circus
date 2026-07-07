@@ -15,7 +15,7 @@
 .live-demo-watermark {
   position: absolute;
   top: 50%;
-  left: 50%;
+  left: 25%;
   font-family: ui-monospace, 'Courier New', monospace;
   font-size: clamp(28px, 6vw, 72px);
   font-weight: 700;
@@ -28,9 +28,9 @@
 }
 
 @keyframes liveDemoWatermarkDrift {
-  0% { transform: translate(-60%, -55%) rotate(-3deg) scale(1); }
-  50% { transform: translate(-40%, -45%) rotate(-1deg) scale(1.05); }
-  100% { transform: translate(-60%, -55%) rotate(-3deg) scale(1); }
+  0% { transform: translate(-55%, -55%) rotate(-3deg) scale(1); }
+  50% { transform: translate(-35%, -45%) rotate(-1deg) scale(1.05); }
+  100% { transform: translate(-55%, -55%) rotate(-3deg) scale(1); }
 }
 
 .live-demo-skip {
