@@ -1,0 +1,60 @@
+.new-project-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(17, 13, 35, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.new-project-card {
+  width: min(480px, 100%);
+  border-radius: 18px;
+  padding: 22px;
+  color: #1f1a33;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.new-project-card h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+
+.new-project-card p {
+  margin: 0 0 16px;
+  color: #4b445d;
+  line-height: 1.5;
+}
+
+.new-project-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #382f5c;
+}
+
+.new-project-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cfc8e8;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 16px;
+  color: #1f1a33;
+  background: #fbfaf8;
+}
+
+.new-project-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
