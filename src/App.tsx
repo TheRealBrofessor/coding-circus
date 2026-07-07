@@ -13,6 +13,7 @@ import { listProjects, loadProject, saveProject } from './project/ProjectStorage
 import { exportProjectJson, exportPython, readProjectJsonFile } from './project/ProjectExport';
 import type { ProjectFile } from './project/types';
 import './App.css';
+import './components/NewProjectDialog.css';
 
 const RUN_TIMEOUT_MS = 20_000;
 const INTRO_SESSION_KEY = 'coding-circus:intro-seen';
