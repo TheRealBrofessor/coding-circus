@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import * as Blockly from 'blockly/core';
 import { playLiveDemo } from '../demo/DemoPlayer';
-import { LIVE_DEMO_SCRIPT } from '../demo/liveDemoScript';
+import type { DemoScript } from '../demo/liveDemoScript';
 import './LiveDemo.css';
 
 interface LiveDemoProps {
   /** The ref itself (not its current value) so we always read the workspace at effect-run
    * time, after BlockEditor's own mount effect has had a chance to populate it. */
   workspaceRef: RefObject<Blockly.WorkspaceSvg | null>;
+  script: DemoScript;
   onReveal: () => void;
   onRunDemo: () => void;
   onSaveDemo: () => void;
@@ -33,12 +34,13 @@ function useLatest<T>(value: T): RefObject<T> {
  * dragging real blocks in from the palette one at a time to assemble a working program,
  * then reveals the app and runs + saves what it just built.
  */
-export function LiveDemo({ workspaceRef, onReveal, onRunDemo, onSaveDemo }: LiveDemoProps) {
+export function LiveDemo({ workspaceRef, script, onReveal, onRunDemo, onSaveDemo }: LiveDemoProps) {
   const [building, setBuilding] = useState(true);
   const started = useRef(false);
   const cancelled = useRef(false);
   const revealed = useRef(false);
 
+  const scriptLatest = useLatest(script);
   const onRevealLatest = useLatest(onReveal);
   const onRunDemoLatest = useLatest(onRunDemo);
   const onSaveDemoLatest = useLatest(onSaveDemo);
@@ -69,7 +71,7 @@ export function LiveDemo({ workspaceRef, onReveal, onRunDemo, onSaveDemo }: Live
       cancelled.current = false;
 
       (async () => {
-        await playLiveDemo(workspace, LIVE_DEMO_SCRIPT, () => cancelled.current);
+        await playLiveDemo(workspace, scriptLatest.current, () => cancelled.current);
         if (cancelled.current) return;
         reveal();
         await wait(300);
